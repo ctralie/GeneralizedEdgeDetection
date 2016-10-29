@@ -40,10 +40,10 @@ def getVerticalStats(I, dim, sigma = 1):
 
 if __name__ == "__main__":
     filename = "mandrill.jpg"
-    dim = 10
+    dim = 5
     sigma = 2
-    
-    I = color.rgb2gray(io.imread('mandrill.jpg'));
+
+    I = color.rgb2gray(io.imread(filename));
 
     (JumpsH, CurvsH, TorsH) = getHorizontalStats(I, dim, sigma)
     (JumpsV, CurvsV, TorsV) = getVerticalStats(I, dim, sigma)
