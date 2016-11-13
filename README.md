@@ -2,6 +2,13 @@
 
 ##  Setup
 
+Install [theano](https://github.com/Theano/Theano) and [lasagne](http://lasagne.readthedocs.io/en/latest/).
+
+```
+$ pip install --upgrade https://github.com/Theano/Theano/archive/master.zip
+$ pip install --upgrade https://github.com/Lasagne/Lasagne/archive/master.zip
+```
+
 Clone the repository.
 ```
 $ git clone https://github.com/jureso/GeneralizedEdgeDetection.git
