@@ -6,20 +6,27 @@ import sys
 sys.path.append('GeometricCoverSongs')
 from CurvatureTools import getCurvVectors
 
-#I: M x N grayscale image
+#I: M x N x Ch image
 #i: Row which is at the top of each patch
 #TODO: Weight by gaussian centered at patch?
 def getPatchRow(I, i, dim):
-    [M, N] = [I.shape[0], I.shape[1]]
+    assert I.ndim == 2 or I.ndim == 3, "Input image array should be of dimension 2 or 3!"
+    if I.ndim == 2:
+        I = I.reshape((I.shape[0], I.shape[1], 1))
+
+    M, N, Ch = I.shape
     NCols = N - dim + 1
-    ret = np.zeros((NCols, dim*dim))
-    PatchRow = I[i:i+dim, :]
+    ret = np.zeros((NCols, dim*dim*Ch))
+    PatchRow = I[i:i+dim, :,:]
     for j in range(NCols):
-        ret[j, :] = PatchRow[:, j:j+dim].flatten()
+        ret[j, :] = PatchRow[:, j:j+dim,:].flatten()
     return ret
 
 def getHorizontalStats(I, dim, sigma = 1):
-    [M, N] = [I.shape[0], I.shape[1]]
+    assert I.ndim == 2 or I.ndim == 3, "Input image array should be of dimension 2 or 3!"
+    if I.ndim == 2:
+        I = I.reshape((I.shape[0], I.shape[1], 1))
+    M, N, Ch = I.shape
     NRows = M - dim + 1
     NCols = N - dim + 1
     Jumps = np.zeros((NRows, NCols))
@@ -35,21 +42,26 @@ def getHorizontalStats(I, dim, sigma = 1):
     return (Jumps, Curvs, Tors)
 
 def getVerticalStats(I, dim, sigma = 1):
-    (J, C, T) = getHorizontalStats(I.T, dim, sigma)
+    (J, C, T) = getHorizontalStats(np.swapaxes(I,0,1), dim, sigma)
     return (J.T, C.T, T.T)
+
+def getStats(I, dim, sigma = 1):
+    (JumpsH, CurvsH, TorsH) = getHorizontalStats(I, dim, sigma)
+    (JumpsV, CurvsV, TorsV) = getVerticalStats(I, dim, sigma)
+    Jumps = np.sqrt(JumpsH ** 2 + JumpsV ** 2)
+    Curvs = np.sqrt(CurvsH ** 2 + CurvsV ** 2)
+    Tors = np.sqrt(TorsH ** 2 + TorsV ** 2)
+    return Jumps, Curvs, Tors, JumpsH, CurvsH, TorsH, JumpsV, CurvsV, TorsV
 
 if __name__ == "__main__":
     filename = "mandrill.jpg"
+
     dim = 5
     sigma = 2
 
     I = color.rgb2gray(io.imread(filename));
+    Jumps, Curvs, Tors, JumpsH, CurvsH, TorsH, JumpsV, CurvsV, TorsV = getStats(I, dim, sigma = sigma)
 
-    (JumpsH, CurvsH, TorsH) = getHorizontalStats(I, dim, sigma)
-    (JumpsV, CurvsV, TorsV) = getVerticalStats(I, dim, sigma)
-    Jumps = np.sqrt(JumpsH**2 + JumpsV**2)
-    Curvs = np.sqrt(CurvsH**2 + CurvsV**2)
-    Tors = np.sqrt(TorsH**2 + TorsV**2)
     plt.subplot(431)
     plt.title("dim %i sigma %g"%(dim, sigma))
     plt.imshow(I, cmap='Greys_r')
@@ -95,4 +107,4 @@ if __name__ == "__main__":
     plt.axis('off')
     plt.title('Tors')
 
-    plt.savefig("Results.png", bbox_inches = "tight", dpi = 300)
+    plt.savefig("Results/Results.png", bbox_inches = "tight", dpi = 300)
