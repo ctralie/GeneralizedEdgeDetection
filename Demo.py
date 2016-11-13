@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 def plot_results(savefile, Iorig, Jumps, Curvs, Tors, JumpsH, CurvsH, TorsH, JumpsV, CurvsV, TorsV):
     plt.subplot(431)
     plt.title("dim %i sigma %g" % (dim, sigma))
-    plt.imshow(Iorig, cmap='Greys_r')
+    plt.imshow(Iorig/Iorig.max())
     plt.axis('off')
 
     plt.subplot(434)
@@ -53,6 +53,8 @@ def plot_results(savefile, Iorig, Jumps, Curvs, Tors, JumpsH, CurvsH, TorsH, Jum
 if __name__ == '__main__':
     imgname = "mandrill"
     savename = "Results/" + imgname
+    from skimage import io
+    import numpy as np
 
     dim = 5
     sigma = 2
@@ -65,11 +67,9 @@ if __name__ == '__main__':
     layer_list = ['input', 'pool1', 'pool2', 'pool3']
 
     features, Iorig = theano_VGG19(imgname + '.jpg', layers=layer_list)
-
     for l in layer_list:
         Jumps, Curvs, Tors, JumpsH, CurvsH, TorsH, JumpsV, CurvsV, TorsV = getStats(features[l], dim, sigma=sigma)
         plot_results(savename + '_' + l + '.png', Iorig, Jumps, Curvs, Tors, JumpsH, CurvsH, TorsH, JumpsV, CurvsV, TorsV)
-
 
 
 
